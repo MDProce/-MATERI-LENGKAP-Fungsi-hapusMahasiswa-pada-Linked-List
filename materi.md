@@ -1,130 +1,206 @@
-# 📘 Sistem Manajemen Data Mahasiswa (C++ Linked List)
+# Materi Lengkap: Manipulasi Data Mahasiswa dengan Linked List di C++
 
-Sistem ini dibuat menggunakan bahasa C++ dengan struktur data **linked list** untuk mengelola data mahasiswa secara dinamis.  
-Setiap mahasiswa memiliki atribut: `nama`, `NIM`, dan `IPK`.  
-Program menyediakan fitur tambah data, tampilkan, hapus, cari, dan urutkan, semua dijalankan melalui antarmuka teks di terminal.
+## Pendahuluan
 
----
+Struktur data linked list adalah salah satu struktur data yang sangat penting dalam pemrograman. Tidak seperti array yang ukurannya tetap, linked list bersifat dinamis dan memungkinkan penambahan atau penghapusan elemen secara efisien. Dalam materi ini, kita akan membahas bagaimana cara mengelola data mahasiswa menggunakan linked list di C++, dengan fokus pada dua operasi utama:
 
-## 🔍 Tujuan Program
+1. **Mengurutkan data mahasiswa** (berdasarkan nama atau IPK)
+2. **Menghapus data mahasiswa** (berdasarkan nama atau NIM)
 
-Mengelola data mahasiswa tanpa batasan jumlah tetap, menggunakan memori dinamis.  
-Struktur linked list memungkinkan penambahan dan penghapusan data secara fleksibel, tanpa harus memindahkan atau menggeser elemen seperti pada array.
+Tujuan dari materi ini adalah agar mahasiswa dan pembaca awam sekalipun bisa memahami bagaimana bekerja dengan linked list secara praktis dan logis.
 
 ---
 
-## 🧩 Struktur Data
+## Struktur Data Dasar
 
-Program menggunakan dua `struct` utama:
+Sebelum melakukan operasi, kita perlu mendefinisikan struktur data mahasiswa dan node linked list.
 
 ```cpp
-struct Mahasiswa {
+struct DataMahasiswa {
     string nama;
     string nim;
     float ipk;
 };
 
 struct Node {
-    Mahasiswa data;
+    DataMahasiswa data;
     Node* next;
 };
-Mahasiswa: menyimpan data satu mahasiswa.
 
-Node: menyimpan satu data mahasiswa + pointer ke node selanjutnya.
+Node* head = nullptr; // Penunjuk ke awal linked list
+```
 
-head: pointer global untuk menunjuk node pertama di list.
+Setiap `Node` menyimpan satu data mahasiswa dan pointer ke node berikutnya. Pointer `head` menunjuk ke node pertama dalam list.
 
-✂️ Penjelasan Lengkap Fungsi hapusMahasiswa()
-🎯 Tujuan
-Menghapus satu data mahasiswa dari linked list berdasarkan nama atau NIM yang dicari user.
+---
 
-📌 1. Mengecek apakah list kosong
-cpp
-Copy
-Edit
-if (head == nullptr)
-Jika head kosong, berarti belum ada data sama sekali.
-Dalam kondisi ini, proses penghapusan gak bisa dilakukan.
-Program akan tampilkan pesan dan keluar dari fungsi.
+## Bagian 1: Mengurutkan Data Mahasiswa (Bubble Sort)
 
-💡 Kenapa penting?
-Kalau list kosong tapi kita lanjut, pointer bisa akses memori kosong → error (crash).
+### Tujuan
 
-📌 2. Input keyword dari user
-cpp
-Copy
-Edit
-cin.ignore();
-getline(cin, keyword);
-cin.ignore(); membuang karakter newline dari input sebelumnya.
+Mengurutkan data mahasiswa dalam linked list berdasarkan:
 
-getline() membaca input lengkap termasuk spasi (misalnya nama lengkap).
+* **Nama (A-Z)**
+* **IPK (tinggi ke rendah)**
 
-💡 Kenapa gak pakai cin >>?
-Karena cin >> cuma baca satu kata. Nama kayak Budi Santoso bakal kepecah jadi Budi doang.
+### Logika Bubble Sort
 
-📌 3. Inisialisasi pointer & flag
-cpp
-Copy
-Edit
-Node* hapus = head;
-Node* sebelum = nullptr;
-bool ditemukan = false;
-hapus: mulai dari head, untuk menelusuri node.
+Algoritma **Bubble Sort** membandingkan dua data yang berurutan. Jika urutannya salah, maka datanya ditukar. Proses ini diulang terus-menerus hingga tidak ada data yang perlu ditukar lagi (artinya data sudah urut).
 
-sebelum: menyimpan node sebelumnya, untuk proses sambung ulang.
+### Implementasi
 
-ditemukan: flag penanda apakah data yang dicari ketemu atau enggak.
+```cpp
+void urutkanMahasiswa() {
+    if (head == nullptr || head->next == nullptr) {
+        cout << "\nData kurang dari 2, tidak perlu diurutkan!" << endl;
+        return;
+    }
 
-📌 4. Cek kecocokan data
-cpp
-Copy
-Edit
-bool cocok = (pilihan == 1 && hapus->data.nama == keyword) ||
-             (pilihan == 2 && hapus->data.nim == keyword);
-Pilihan 1 → cocokkan dengan nama
+    int pilihan;
+    cout << "\n== Urutkan berdasarkan: ==" << endl;
+    cout << "1. Nama (A-Z)" << endl;
+    cout << "2. IPK (Tinggi ke Rendah)" << endl;
+    cout << "Pilih (1/2): ";
+    cin >> pilihan;
 
-Pilihan 2 → cocokkan dengan nim
+    bool tukar;
+    do {
+        tukar = false;
+        Node *a = head;
+        while (a->next != nullptr) {
+            Node *b = a->next;
+            bool kondisi = false;
 
-💡 Tujuannya: supaya satu kondisi bisa handle dua jenis pencarian
+            if (pilihan == 1 && a->data.nama > b->data.nama)
+                kondisi = true;
+            if (pilihan == 2 && a->data.ipk < b->data.ipk)
+                kondisi = true;
 
-📌 5. Proses penghapusan node
-cpp
-Copy
-Edit
-if (sebelum == nullptr)
-    head = hapus->next;
-else
-    sebelum->next = hapus->next;
-Jika sebelum == nullptr, berarti node yang dihapus adalah node pertama (head)
+            if (kondisi) {
+                swap(a->data, b->data); // Tukar isi data
+                tukar = true;
+            }
+            a = a->next;
+        }
+    } while (tukar);
 
-Kalau tidak, berarti node dihapus dari tengah/akhir. Kita sambungkan node sebelumnya ke node setelahnya.
+    cout << "\nData berhasil diurutkan!" << endl;
+}
+```
 
-💬 Analogi:
-Bayangin barisan orang. Kalau lo nyabut orang tengah, orang di depannya langsung salaman sama yang di belakang.
+### Penjelasan
 
-📌 6. Menghapus node dari memori
-cpp
-Copy
-Edit
-delete hapus;
-Setelah dilepas dari rantai, node dihapus dari memori agar tidak terjadi memory leak.
+* `if (head == nullptr || head->next == nullptr)`: Mengecek jika data kosong atau hanya satu node.
+* `do...while`: Melakukan perulangan hingga tidak ada data yang ditukar.
+* `swap(a->data, b->data)`: Menukar isi data antar node, bukan node-nya.
 
-📌 7. Jika tidak ditemukan
-cpp
-Copy
-Edit
-if (!ditemukan)
-    cout << "Data tidak ditemukan";
-Menampilkan pesan kalau data gak ditemukan di dalam list.
+### Contoh
 
-✅ Kesimpulan Fungsi
-Fungsi ini memperlihatkan:
+Jika ada 3 mahasiswa:
 
-Traversal node menggunakan pointer
+* Budi (IPK 3.2)
+* Andi (IPK 3.6)
+* Cici (IPK 2.9)
 
-Pengecekan node head vs node tengah/akhir
+Jika diurutkan berdasarkan nama, hasilnya:
 
-Penanganan pointer sebelum dan hapus
+* Andi, Budi, Cici
 
-Penghapusan aman dari memori dinamis
+Jika berdasarkan IPK:
+
+* Andi, Budi, Cici
+
+---
+
+## Bagian 2: Menghapus Data Mahasiswa
+
+### Tujuan
+
+Menghapus node dari linked list berdasarkan:
+
+* **Nama** mahasiswa
+* **NIM** mahasiswa
+
+### Logika
+
+1. Cek apakah linked list kosong.
+2. Minta input keyword dari pengguna (nama atau NIM).
+3. Telusuri setiap node:
+
+   * Jika cocok dengan keyword, hapus node tersebut.
+   * Jika node berada di tengah atau akhir, sambungkan node sebelumnya ke node sesudahnya.
+   * Jika node adalah head, pindahkan head ke node berikutnya.
+
+### Implementasi
+
+```cpp
+void hapusMahasiswa() {
+    if (head == nullptr) {
+        cout << "List masih kosong." << endl;
+        return;
+    }
+
+    int pilihan;
+    string keyword;
+    cout << "Hapus berdasarkan: 1. Nama, 2. NIM\nPilih (1/2): ";
+    cin >> pilihan;
+    cin.ignore();
+    cout << "Masukkan keyword: ";
+    getline(cin, keyword);
+
+    Node *hapus = head;
+    Node *sebelum = nullptr;
+    bool ditemukan = false;
+
+    while (hapus != nullptr) {
+        bool cocok = (pilihan == 1 && hapus->data.nama == keyword) ||
+                     (pilihan == 2 && hapus->data.nim == keyword);
+
+        if (cocok) {
+            if (sebelum == nullptr)
+                head = hapus->next;
+            else
+                sebelum->next = hapus->next;
+
+            delete hapus;
+            ditemukan = true;
+            cout << "Data berhasil dihapus." << endl;
+            break;
+        }
+
+        sebelum = hapus;
+        hapus = hapus->next;
+    }
+
+    if (!ditemukan)
+        cout << "Data tidak ditemukan." << endl;
+}
+```
+
+### Penjelasan
+
+* `hapus`: Menunjuk node yang sedang diperiksa.
+* `sebelum`: Menunjuk node sebelum `hapus`, berguna saat menghapus node di tengah.
+* Jika data ditemukan dan `sebelum == nullptr`, artinya node yang dihapus adalah head.
+* `delete hapus`: Menghapus node dari memori.
+
+---
+
+## Penutup
+
+Dengan mempelajari dua fungsi penting ini (pengurutan dan penghapusan), kita dapat memahami bagaimana bekerja dengan linked list secara praktis:
+
+* Bubble Sort membantu kita menyusun data agar mudah dibaca.
+* Penghapusan berdasarkan keyword membuat data tetap relevan dan bersih.
+
+Pemahaman ini akan berguna untuk proyek-proyek lanjutan seperti sistem informasi mahasiswa, manajemen data, dan aplikasi CRUD.
+
+---
+
+## Latihan
+
+1. Tambahkan fitur pencarian berdasarkan nama.
+2. Modifikasi fungsi urut agar bisa mengurutkan dari Z ke A.
+3. Tambahkan validasi input untuk mencegah kesalahan pengguna.
+
+Selamat belajar dan semangat ngoding! 💻🔥
